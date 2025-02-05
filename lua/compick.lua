@@ -39,9 +39,14 @@ function M.pick(choices, on_select, opts)
 	end
 	local win = vim.api.nvim_open_win(buf, true, win_opts)
 	vim.cmd("startinsert")
+	if opts.initial_text then
+		vim.api.nvim_buf_set_lines(buf, 0, -1, false, { opts.initial_text })
+		vim.api.nvim_win_set_cursor(win, { 1, #opts.initial_text })
+	end
 
 	--- Setup the window and picker
 	vim.wo[win].number = false
+
 	require('compick._').omnifunc = function(findstart, base)
 		if findstart == 1 then
 			return 0
@@ -65,8 +70,7 @@ function M.pick(choices, on_select, opts)
 	vim.api.nvim_create_autocmd("InsertCharPre", {
 		buffer = buf,
 		callback = function()
-			local key = vim.keycode("<C-x><C-o>")
-			vim.api.nvim_feedkeys(key, "m", false)
+			require('compick._').trigger_compl()
 		end
 	})
 	vim.api.nvim_create_autocmd('CompleteDone', {
@@ -80,15 +84,5 @@ function M.pick(choices, on_select, opts)
 		end
 	})
 end
-
-M.pick(function(base)
-		return vim.fs.find(function(name, path)
-			return not not path:match(base)
-		end, {
-			follow = true,
-			limit = 10
-		})
-	end,
-	function(text) vim.cmd.edit(text) end)
 
 return M
