@@ -11,8 +11,20 @@ function M.pick(initial_text)
 		if M.cache[base] then
 			return M.cache[base]
 		end
-		vim.system(vim.list_extend(vim.split(vim.o.grepprg:sub(1, -2), ' '), { base }), {
+		local grepcmd = vim.split(vim.o.grepprg:sub(1, -2), ' ')
+		local added_args = false
+		grepcmd = vim.tbl_map(function(x)
+			if x == '%s' then
+				added_args = true
+				return base
+			end
+		end, grepcmd)
+		if not added_args then
+			grepcmd[#grepcmd + 1] = base
+		end
+		vim.system(grepcmd, {
 			text = true,
+			timeout = 0.1,
 			stdout = function(_, data)
 				if data then
 					local data_list = vim.split(data, '\n')
@@ -24,11 +36,8 @@ function M.pick(initial_text)
 						M.cache[base][#M.cache[base] + 1] = data_list[k]
 					end
 				end
-				vim.schedule(function()
-					require('compick._').trigger_compl()
-				end)
 			end
-		})
+		}, function() end)
 	end, function(selected)
 		local item = vim.fn.getqflist({ lines = { selected }, efm = vim.o.grepformat }).items[1]
 		if item.bufnr > 0 then
