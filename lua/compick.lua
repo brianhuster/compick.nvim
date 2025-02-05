@@ -6,10 +6,6 @@ local function close_picker(win, buf)
 	vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "n", false)
 end
 
-local function get_center_position()
-	return { math.floor(vim.o.lines / 2), math.floor(vim.o.columns / 2) }
-end
-
 --- @param choices table|function
 --- @param on_select function
 --- @param opts table?
@@ -25,12 +21,12 @@ function M.pick(choices, on_select, opts)
 		relative = "editor",
 		width = 20,
 		height = 1,
-		row = get_center_position()[1],
+		row = 0,
+		col = 1,
 		border = "rounded",
 		focusable = false,
 		noautocmd = true,
 	}
-	win_opts.col = get_center_position()[2] - win_opts.width / 2
 
 	for k, _ in pairs(win_opts) do
 		if opts[k] ~= nil then

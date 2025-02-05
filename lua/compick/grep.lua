@@ -5,6 +5,9 @@ M.cache = {}
 function M.pick(initial_text)
 	M.cache = {}
 	require('compick').pick(function(base)
+		if not base or base == '' then
+			return
+		end
 		if M.cache[base] then
 			return M.cache[base]
 		end
