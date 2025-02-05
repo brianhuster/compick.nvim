@@ -1,24 +1,29 @@
 local M = {}
 
-local cache = {}
+M.cache = {}
 
 function M.pick(initial_text)
-	cache = {}
+	M.cache = {}
 	require('compick').pick(function(base)
-		if cache.base then
-			return cache.base
+		if M.cache[base] then
+			return M.cache[base]
 		end
-		vim.system({ unpack(vim.split(vim.o.grepprg, ' ')), base }, {
+		vim.system(vim.list_extend(vim.split(vim.o.grepprg:sub(1, -2), ' '), { base }), {
 			text = true,
-			on_stdout = function(_, out)
-				cache.base = out
-				require('compick._').trigger_compl()
+		}, function(obj)
+			if obj.stdout then
+				M.cache[base] = vim.split(obj.stdout, '\n')
+				vim.schedule(require('compick._').trigger_compl)
 			end
-		})
+		end)
 	end, function(selected)
-		local qflist = vim.fn.getqflist({ lines = { selected }, efm = vim.o.grepformat })
-		vim.cmd.buffer(qflist[1].bufnr)
-		vim.api.nvim_set_cursor(0, { qflist[1].lnum, qflist[1].col })
+		local item = vim.fn.getqflist({ lines = { selected }, efm = vim.o.grepformat }).items[1]
+		if item.bufnr > 0 then
+			vim.cmd.buffer(item.bufnr)
+		end
+		if item.lnum > 0 and item.col >= 0 then
+			vim.api.nvim_win_set_cursor(0, { item.lnum, item.col })
+		end
 	end)
 end
 

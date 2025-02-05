@@ -67,7 +67,7 @@ function M.pick(choices, on_select, opts)
 			close_picker(win, buf)
 		end
 	})
-	vim.api.nvim_create_autocmd("InsertCharPre", {
+	vim.api.nvim_create_autocmd("TextChangedI", {
 		buffer = buf,
 		callback = function()
 			require('compick._').trigger_compl()
