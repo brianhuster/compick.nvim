@@ -16,12 +16,17 @@ function M.pick(initial_text)
 			stdout = function(_, data)
 				if data then
 					local data_list = vim.split(data, '\n')
+					if not M.cache[base] then
+						M.cache[base] = data_list
+					end
 					M.cache[base][#M.cache[base]] = M.cache[base][#M.cache[base]] .. data_list[1]
 					for k = 2, #data_list do
 						M.cache[base][#M.cache[base] + 1] = data_list[k]
 					end
 				end
-				require('compick._').trigger_compl()
+				vim.schedule(function()
+					require('compick._').trigger_compl()
+				end)
 			end
 		})
 	end, function(selected)
