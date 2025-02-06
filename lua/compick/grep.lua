@@ -17,11 +17,16 @@ function M.pick(initial_text)
 			if x == '%s' then
 				added_args = true
 				return base
+			elseif x == '%' or x == '#' then
+				return vim.fn.expand(x)
+			else
+				return x
 			end
 		end, grepcmd)
 		if not added_args then
 			grepcmd[#grepcmd + 1] = base
 		end
+		vim.print(grepcmd)
 		vim.system(grepcmd, {
 			text = true,
 			timeout = 0.1,
